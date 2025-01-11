@@ -59,6 +59,10 @@
     font-size: 18px;
     color: #ffffff;
   }
+
+  a{
+    text-decoration: none;
+  }
   
   .menu-item .icon {
     width: 24px;
@@ -69,7 +73,7 @@
   .log-out {
     width: 24px;
     height: 24px;
-    align-self: flex-end;
+    align-self: flex-start;
   }
   
   .main-content {
