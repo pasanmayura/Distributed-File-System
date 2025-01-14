@@ -1,16 +1,16 @@
 import React from "react";
-import clock from "./Components/clock.svg";
-import cloud from "./Components/cloud.svg";
-import downloadCloud from "./Components/download-cloud.svg";
-import file from "./Components/file.png";
-import folder from "./Components/folder.svg";
-import image from "./Components/image.svg";
-import line2 from "./Components/line-2.svg";
-import logOut from "./Components/log-out.svg";
-import rectangle1 from "./Components/rectangle-1.svg";
-import search from "./Components/search.svg";
-import star from "./Components/star.png";
-import youtube from "./Components/youtube.svg";
+import clock from "./images/clock.svg";
+import cloud from "./images/cloud.svg";
+import downloadCloud from "./images/download-cloud.svg";
+import file from "./images/file.png";
+import folder from "./images/folder.svg";
+import image from "./images/image.svg";
+import line2 from "./images/line-2.svg";
+import logOut from "./images/log-out.svg";
+import rectangle1 from "./images/rectangle-1.svg";
+import search from "./images/search.svg";
+import star from "./images/star.png";
+import youtube from "./images/youtube.svg";
 import "./style.css";
 
 export const Dashboard = () => {
