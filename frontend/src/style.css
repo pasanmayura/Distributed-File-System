@@ -168,8 +168,8 @@
 }
 
 .preview-item {
-    width: 100px;
-    height: 100px;
+    width: 200px;
+    height: 200px;
     background-color: #d9d9d9;
     border-radius: 10px;
     transition: transform 0.3s ease;
@@ -178,4 +178,33 @@
 
 .preview-item:hover {
     transform: scale(1.05);
+}
+
+.main-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+  margin-top: 30px;
+}
+
+.content-section {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  margin-top: 30px; /* Add this to move the content section further down */
+}
+
+.sidebar {
+  width: 20%;
+  background-color: #1a143e;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-top: 30px; /* Add extra padding to move the content within the sidebar down */
+}
+
+.preview-section {
+  margin-top: 40px; /* Increase the spacing for the preview section */
 }
