@@ -1,4 +1,4 @@
-.dashoboard {
+.dashboard {
     display: flex;
     flex-direction: row;
     width: 100%;
@@ -6,133 +6,176 @@
     background-color: #1a143e;
     color: #ffffff;
     font-family: "Manrope", sans-serif;
-  }
-  
-  .sidebar {
+}
+
+.sidebar {
     width: 20%;
     background-color: #1a143e;
     padding: 20px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-  }
-  
-  .sidebar-header {
+}
+
+.sidebar-header {
     margin-bottom: 20px;
-  }
-  
-  .sidebar-title {
+}
+
+.sidebar-title {
     font-size: 36px;
     font-weight: bold;
-  }
-  
-  .line {
+}
+
+.line {
     width: 100%;
     height: 1px;
     background-color: #ffffff;
     margin-top: 10px;
-  }
-  
-  .sidebar-menu {
+}
+
+.sidebar-menu {
     flex-grow: 1;
-  }
-  
-  .menu-section {
+}
+
+.menu-section {
     margin-bottom: 20px;
-  }
-  
-  .menu-title {
+}
+
+.menu-title {
     font-size: 24px;
     font-weight: bold;
     margin-bottom: 10px;
-  }
-  
-  .menu-list {
+}
+
+.menu-list {
     list-style: none;
     padding: 0;
-  }
-  
-  .menu-item {
+}
+
+.menu-list a {
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+.menu-list a:hover {
+    opacity: 0.8;
+    transform: translateX(5px);
+}
+
+.menu-item {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
     font-size: 18px;
     color: #ffffff;
-  }
+    padding: 8px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
 
-  a{
-    text-decoration: none;
-  }
-  
-  .menu-item .icon {
+.menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu-item .icon {
     width: 24px;
     height: 24px;
     margin-right: 10px;
-  }
-  
-  .log-out {
+}
+
+.log-out {
     width: 24px;
     height: 24px;
-    align-self: flex-start;
-  }
-  
-  .main-content {
+    align-self: flex-end;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.log-out:hover {
+    transform: scale(1.1);
+}
+
+.main-content {
     width: 80%;
     padding: 20px;
     display: flex;
     flex-direction: column;
-  }
-  
-  .main-header {
+}
+
+.main-header {
     display: flex;
     align-items: center;
     margin-bottom: 20px;
-  }
-  
-  .search-bar {
+    position: relative;
+}
+
+.search-bar {
     width: 100%;
     height: 40px;
     border-radius: 20px;
     background-color: #ffffff;
-  }
-  
-  .search-icon {
+    border: none;
+    padding: 0 45px 0 15px;
+    font-size: 16px;
+}
+
+.search-icon {
     width: 24px;
     height: 24px;
-    margin-left: -40px;
-  }
-  
-  .content-section {
+    position: absolute;
+    right: 15px;
+    cursor: pointer;
+}
+
+.content-section {
     display: flex;
     justify-content: space-around;
     margin-bottom: 20px;
-  }
-  
-  .content-item {
+}
+
+.content-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-  }
-  
-  .content-item .icon {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.content-item:hover {
+    transform: translateY(-5px);
+}
+
+.content-item .icon {
     width: 48px;
     height: 48px;
     margin-bottom: 10px;
-  }
-  
-  .preview-section {
+}
+
+.preview-section {
     margin-top: 20px;
-  }
-  
-  .preview-grid {
+}
+
+.preview-section h2 {
+    margin-bottom: 15px;
+}
+
+.preview-grid {
     display: flex;
     justify-content: space-around;
-  }
-  
-  .preview-item {
+    gap: 20px;
+}
+
+.preview-item {
     width: 100px;
     height: 100px;
     background-color: #d9d9d9;
     border-radius: 10px;
-  }
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.preview-item:hover {
+    transform: scale(1.05);
+}

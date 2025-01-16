@@ -15,7 +15,7 @@ import "./style.css";
 
 export const Dashboard = () => {
   return (
-    <div className="dashoboard">
+    <div className="dashboard">
       <aside className="sidebar">
         <div className="sidebar-header">
           <h1 className="sidebar-title">My Docs</h1>
@@ -23,46 +23,54 @@ export const Dashboard = () => {
         </div>
         <nav className="sidebar-menu">
           <div className="menu-section">
-            <h2 className="menu-title">Home</h2>
+            <ul className="menu-list">
+              {/* Home as a tab */}
+              <a href="#Home">
+                <li className="menu-item">
+                  <img className="icon" alt="Home" src={cloud} />
+                  Home
+                </li>
+              </a>
+            </ul>
           </div>
           <div className="menu-section">
             <h2 className="menu-title">File Manager</h2>
             <ul className="menu-list">
-                <a href="#MyStorage">
-                    <li className="menu-item">
-                        <img className="icon" alt="Cloud storage" src={cloud} />
-                        My Storage
-                    </li>
-                </a>
-                <a href="#Recent">  
-                    <li className="menu-item">
-                        <img className="icon" alt="Recent files" src={star} />
-                        Recent
-                    </li>
-                </a>
-                <a href="#Favourite">
-                    <li className="menu-item">
-                        <img className="icon" alt="Favourite files" src={clock} />
-                        Favourite
-                    </li>
-                </a>
+              <a href="#MyStorage">
+                <li className="menu-item">
+                  <img className="icon" alt="Cloud storage" src={cloud} />
+                  My Storage
+                </li>
+              </a>
+              <a href="#Recent">
+                <li className="menu-item">
+                  <img className="icon" alt="Recent files" src={star} />
+                  Recent
+                </li>
+              </a>
+              <a href="#Favourite">
+                <li className="menu-item">
+                  <img className="icon" alt="Favourite files" src={clock} />
+                  Favourite
+                </li>
+              </a>
             </ul>
           </div>
           <div className="menu-section">
             <h2 className="menu-title">Shared File</h2>
             <ul className="menu-list">
-                <a href="#SharedFolder">
-                    <li className="menu-item">
-                        <img className="icon" alt="Shared folder" src={folder} />
-                        Shared Folder
-                    </li>
-                </a>
-                <a href="#SharedDocument">
-                    <li className="menu-item">
-                        <img className="icon" alt="Shared document" src={file} />
-                        Shared File
-                    </li>
-                </a>
+              <a href="#SharedFolder">
+                <li className="menu-item">
+                  <img className="icon" alt="Shared folder" src={folder} />
+                  Shared Folder
+                </li>
+              </a>
+              <a href="#SharedDocument">
+                <li className="menu-item">
+                  <img className="icon" alt="Shared document" src={file} />
+                  Shared File
+                </li>
+              </a>
             </ul>
           </div>
         </nav>
