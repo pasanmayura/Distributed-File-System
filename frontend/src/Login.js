@@ -19,7 +19,7 @@ const Login = () => {
 
       // If login is successful, store the token (optional: in localStorage or state)
       if (response.data.token) {
-        localStorage.setItem('authToken', response.data.token); // Save token (optional)
+        sessionStorage.setItem("userEmail", email);
         setMessage('Login successful');
         setTimeout(() => {
           navigate('/dashboard');  // Redirect to dashboard after successful login

@@ -9,10 +9,14 @@ import star from "./images/star.png";
 import "./style.css";
 
 export const Sidebar = () => {
+
+  const userEmail = sessionStorage.getItem("userEmail");
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <h1 className="sidebar-title">My Docs</h1>
+        <h4>{userEmail ? userEmail : "User"}</h4>
         <img className="line" alt="Separator line" src={line2} />
       </div>
       <nav className="sidebar-menu">
