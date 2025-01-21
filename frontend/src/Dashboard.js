@@ -71,18 +71,18 @@ export const Dashboard = () => {
         <section className="preview-section">
           <h2>Preview</h2>
           <div className="preview-grid">
-            {/* <div className="preview-item">
-              {selectedImage && <img src={selectedImage} alt="Selected" className="preview-image" />}
-            </div> */}
-            <div className="preview-item"></div>
-            <div className="preview-item"></div>
-            <div className="preview-item"></div>
+          <div className="preview-item">
+              {selectedImage && <img src={selectedImage} alt="Selected" />}
+              {selectedDocument && <p>{selectedDocument}</p>}
+              {selectedVideo && <video controls src={selectedVideo} />}
+            </div>
           </div>
         </section>
+        <center><button className="upload-btn">Upload</button></center>
       </main>
 
       <input 
-        id="file-input" 
+        id="image-input" 
         type="file" 
         accept="image/*" 
         style={{ display: "none" }} 
