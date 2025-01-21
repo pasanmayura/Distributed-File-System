@@ -12,6 +12,14 @@ export const Sidebar = () => {
 
   const userEmail = sessionStorage.getItem("userEmail");
 
+  const handleLogout = () => {
+    // Clear session storage
+    sessionStorage.removeItem("userEmail");
+    
+    // Redirect to login page
+    window.location.href = "/login";  // Or use `history.push('/login')` if you're using React Router
+  };
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
@@ -71,7 +79,14 @@ export const Sidebar = () => {
           </ul>
         </div>
       </nav>
-      <img className="log-out" alt="Log out button" src={logOut} />
+
+      <img 
+        className="log-out" 
+        alt="Log out button" 
+        src={logOut} 
+        onClick={handleLogout} 
+      />
+
     </aside>
   );
 };
