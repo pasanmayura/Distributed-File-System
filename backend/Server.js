@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 app.use(bodyParser.json());
@@ -12,9 +14,9 @@ app.use(cors());
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '', // Make sure this is the correct password
+  password: '', 
   database: 'dfs',
-  port: 3307 // Default MySQL port, or whatever is used in Workbench
+  port: 3307 
 });
 
 db.connect((err) => {
@@ -25,16 +27,41 @@ db.connect((err) => {
 // Register route
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  db.query(
-    'INSERT INTO users (email, password) VALUES (?, ?)', // Using 'email' as column name
-    [username, hashedPassword],
-    (err, result) => {
-      if (err) throw err;
-      res.send({ message: 'User registered' });
-    }
-  );
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    
+    db.query(
+      'INSERT INTO users (email, password) VALUES (?, ?)', 
+      [username, hashedPassword],
+      (err, result) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ message: 'Database error occurred.' });
+        }
+
+        const folderPath = path.join('\\\\192.168.1.5\\Share', username);
+
+        // Check if the folder exists, create if not
+        if (!fs.existsSync(folderPath)) {
+          try {
+            fs.mkdirSync(folderPath);
+            return res.json({ message: 'Registration successful! Folder created.' });
+          } catch (folderError) {
+            console.error(folderError);
+            return res.status(500).json({ message: 'Failed to create folder.' });
+          }
+        } else {
+          return res.json({ message: 'Registration successful! Folder already exists.' });
+        }
+      }
+    );
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'An error occurred during registration.' });
+  }
 });
+
 
 // Login route
 app.post('/login', (req, res) => {
