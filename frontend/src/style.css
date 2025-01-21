@@ -99,7 +99,7 @@
 .log-out {
     width: 24px;
     height: 24px;
-    align-self: flex-end;
+    align-self: flex-start;
     cursor: pointer;
     transition: transform 0.3s ease;
     margin-bottom: 35px; 
