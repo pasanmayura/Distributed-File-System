@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';  // useNavigate to redirect after login
+import './Login.css';
 
 const Login = () => {
   const [email, setEmail] = useState('');
