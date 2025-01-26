@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';  // Import useNavigate
 import './Register.css';
+import register from './images/register.png';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -29,8 +30,12 @@ const Register = () => {
   };
 
   return (
-    <div>
-      <h2>Register</h2>
+    <div className="register-container">
+      <img src={register} alt="register" className="register" />  {/* Add the image */}
+      <h1>DocuCloud</h1>
+      <h4>"Safe Place For All Your Files"</h4>
+      <h5>__________________________________________</h5>
+      <h2>Register Now!</h2>
       <form onSubmit={handleSubmit}>
         <input
           type="email"
@@ -46,8 +51,10 @@ const Register = () => {
         />
         <button type="submit">Register</button>
       </form>
-      {message && <p>{message}</p>}
+      {message && <p className="message">{message}</p>}
     </div>
+    
+    
   );
 };
 

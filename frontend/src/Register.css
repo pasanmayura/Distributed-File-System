@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f0f2f5;
+    background-color: #03265a;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -9,38 +9,69 @@ body {
 }
 
 .register-container {
-    background-color: #fff;
+    background-color: #ffffff;
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     width: 300px;
     text-align: center;
+    
 }
 
-.register-container h1 {
+
+.register-container .register {
+    width: 150px;
     margin-bottom: 20px;
-    font-size: 24px;
-    color: #333;
+}
+.register-container h1 {
+    margin-top: -30px;
+    font-family: Arial, sans-serif;
+    font-size: 34px;
+    color: #050a95;
+}
+.register-container h4 {
+    font-size: 13px;
+    color: #3335c6;
+    font-weight: 700;
+    margin-top: -20px;
+}
+.register-container h5 {
+    margin-top: 40px;
+    font-size: 13px;
+    color: #cccdd0;
+    font-weight: lighter;
+    
+}
+.register-container h2 {
+    margin-top: 40px;
+    font-size: 20px;
+    color: #131439;
 }
 
-.register-container input[type="text"],
+
+
+.register-container input[type="email"],
 .register-container input[type="password"] {
-    width: 100%;
+    width: 95%;
     padding: 10px;
-    margin: 10px 0;
+    margin: 5px 0;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 10px;
+    
+    
+   
 }
 
 .register-container button {
     width: 100%;
     padding: 10px;
-    background-color: #007bff;
+    background-color: #023163;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     color: #fff;
     font-size: 16px;
     cursor: pointer;
+    margin-top: 20px;
 }
 
 .register-container button:hover {
@@ -50,5 +81,6 @@ body {
 .message {
     margin-top: 20px;
     font-size: 14px;
+    font-family: Arial, Helvetica, sans-serif;
     color: #ff0000;
 }
