@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';  // useNavigate to redirect after login
 import './Login.css';
+import Loginimg from './images/Loginimg.png';  // Import the image
+import user from './images/user.png';  // Import the image
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -34,24 +36,33 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Login</button>
-      </form>
-      {message && <p>{message}</p>}
+    <div className="login-containers">
+      <div className="Image-container">
+        <h2>DocuCloud</h2>
+        <img src={Loginimg} alt="Loginimg" className="Loginimg" />  {/* Add the image */}
+        <h4>"Welcome Back"</h4>
+      </div>
+
+      <div className="login-container">
+      <img src={user} alt="user" className="user" />  {/* Add the image */}
+        <h2>Login</h2>
+        <form onSubmit={handleLogin}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button type="submit">Login</button>
+        </form>
+        {message && <p className="message">{message}</p>}
+      </div>
     </div>
   );
 };
