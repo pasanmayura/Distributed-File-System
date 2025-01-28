@@ -11,6 +11,10 @@ function App() {
         {/* Redirect to /Login if the user visits the root route */}
         <Route path="/" element={<Navigate to="/Register" />} />
         
+         {/* Route for the storage */}
+         <Route path="/storage" element={<storage />} />
+        
+        
         {/* Route for the dashboard */}
         <Route path="/dashboard" element={<Dashboard />} />
         
