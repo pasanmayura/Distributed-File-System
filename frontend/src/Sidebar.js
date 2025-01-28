@@ -17,13 +17,13 @@ export const Sidebar = () => {
     sessionStorage.removeItem("userEmail");
     
     // Redirect to login page
-    window.location.href = "/login";  // Or use `history.push('/login')` if you're using React Router
+    window.location.href = "/login";  // Or use history.push('/login') if you're using React Router
   };
 
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h1 className="sidebar-title">My Docs</h1>
+        <h1 className="sidebar-title">DocuCloud</h1>
         <h4>{userEmail ? userEmail : "User"}</h4>
         <img className="line" alt="Separator line" src={line2} />
       </div>

@@ -9,33 +9,30 @@ import "./style.css";
 
 export const Dashboard = () => {
   const [selectedImage, setSelectedImage] = useState(null);
-  const [selectedDocument, setSelectedDocument] = useState(null); // State to store selected document
+  const [selectedDocument, setSelectedDocument] = useState(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setSelectedImage(URL.createObjectURL(file)); // Create a local URL for preview
+      setSelectedImage(URL.createObjectURL(file));
     }
   };
 
-  // Handle document upload
   const handleDocumentUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setSelectedDocument(file.name); // Just displaying the document name
+      setSelectedDocument(file.name);
     }
   };
 
-  // Handle video upload
   const handleVideoUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setSelectedVideo(URL.createObjectURL(file)); // Create a local URL for video preview
+      setSelectedVideo(URL.createObjectURL(file));
     }
   };
 
-  // Trigger the file input click
   const triggerFileInput = (type) => {
     if (type === "image") {
       document.getElementById("image-input").click();
@@ -46,9 +43,19 @@ export const Dashboard = () => {
     }
   };
 
+  const handleRemove = (type) => {
+    if (type === "image") {
+      setSelectedImage(null);
+    } else if (type === "document") {
+      setSelectedDocument(null);
+    } else if (type === "video") {
+      setSelectedVideo(null);
+    }
+  };
+
   return (
     <div className="dashboard">
-      <Sidebar /> {/* Use the Sidebar component here */}
+      <Sidebar />
       <main className="main-content">
         <header className="main-header">
           <img className="search-bar" alt="Search bar" src={rectangle1} />
@@ -71,14 +78,38 @@ export const Dashboard = () => {
         <section className="preview-section">
           <h2>Preview</h2>
           <div className="preview-grid">
-          <div className="preview-item">
-              {selectedImage && <img src={selectedImage} alt="Selected" />}
-              {selectedDocument && <p>{selectedDocument}</p>}
-              {selectedVideo && <video controls src={selectedVideo} />}
-            </div>
+            {selectedImage && (
+              <div className="preview-item">
+                <img src={selectedImage} alt="Selected" />
+                <div className="preview-controls">
+                  <button className="preview-control-btn" onClick={() => triggerFileInput("image")}>Edit</button>
+                  <button className="preview-control-btn remove-btn" onClick={() => handleRemove("image")}>Remove</button>
+                </div>
+              </div>
+            )}
+            {selectedDocument && (
+              <div className="preview-item">
+                <p>{selectedDocument}</p>
+                <div className="preview-controls">
+                  <button className="preview-control-btn" onClick={() => triggerFileInput("document")}>Edit</button>
+                  <button className="preview-control-btn remove-btn" onClick={() => handleRemove("document")}>Remove</button>
+                </div>
+              </div>
+            )}
+            {selectedVideo && (
+              <div className="preview-item">
+                <video controls src={selectedVideo} />
+                <div className="preview-controls">
+                  <button className="preview-control-btn" onClick={() => triggerFileInput("video")}>Edit</button>
+                  <button className="preview-control-btn remove-btn" onClick={() => handleRemove("video")}>Remove</button>
+                </div>
+              </div>
+            )}
           </div>
         </section>
-        <center><button className="upload-btn">Upload</button></center>
+        <center>
+          <button className="upload-btn">Upload</button>
+        </center>
       </main>
 
       <input 
@@ -92,7 +123,7 @@ export const Dashboard = () => {
       <input 
         id="document-input" 
         type="file" 
-        accept=".pdf,.doc,.docx,.txt" // You can specify document formats
+        accept=".pdf,.doc,.docx,.txt" 
         style={{ display: "none" }} 
         onChange={handleDocumentUpload} 
       />
@@ -104,7 +135,6 @@ export const Dashboard = () => {
         style={{ display: "none" }} 
         onChange={handleVideoUpload} 
       />
-
     </div>
   );
 };
