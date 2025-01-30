@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Storage from './storage'; 
 import { Dashboard } from './Dashboard'; 
 import Login from './Login'; 
 import Register from './Register';
@@ -12,7 +13,7 @@ function App() {
         <Route path="/" element={<Navigate to="/Register" />} />
         
          {/* Route for the storage */}
-         <Route path="/storage" element={<storage />} />
+        <Route path="/Storage" element={<Storage />} />
         
         
         {/* Route for the dashboard */}
