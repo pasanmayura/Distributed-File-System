@@ -16,7 +16,7 @@ const db = mysql.createConnection({
   user: 'root',
   password: '', 
   database: 'dfs',
-  port: 3307 
+  port: 3307
 });
 
 db.connect((err) => {
@@ -24,13 +24,13 @@ db.connect((err) => {
   console.log('Connected to MySQL');
 });
 
-// Register route
+// Register route (creates folders on both servers)
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     db.query(
       'INSERT INTO users (email, password) VALUES (?, ?)', 
       [username, hashedPassword],
@@ -40,20 +40,35 @@ app.post('/register', async (req, res) => {
           return res.status(500).json({ message: 'Database error occurred.' });
         }
 
-        const folderPath = path.join('\\\\192.168.1.5\\Share', username);
+        // Define the network paths of both servers
+        const serverPaths = [
+          '\\\\172.19.21.103\\share',  // First server
+          '\\\\172.19.21.109\\share'   // Second server
+        ];
 
-        // Check if the folder exists, create if not
-        if (!fs.existsSync(folderPath)) {
+        let folderErrors = [];
+
+        // Create folder on both servers
+        serverPaths.forEach((serverPath) => {
+          const folderPath = path.join(serverPath, username);
           try {
-            fs.mkdirSync(folderPath);
-            return res.json({ message: 'Registration successful! Folder created.' });
+            if (!fs.existsSync(folderPath)) {
+              fs.mkdirSync(folderPath);
+              console.log(`Folder created at: ${folderPath}`);
+            } else {
+              console.log('Folder already exists at: ${folderPath}');
+            }
           } catch (folderError) {
-            console.error(folderError);
-            return res.status(500).json({ message: 'Failed to create folder.' });
+            console.error(`Error creating folder at ${folderPath}:`, folderError);
+            folderErrors.push(folderPath);
           }
-        } else {
-          return res.json({ message: 'Registration successful! Folder already exists.' });
+        });
+
+        if (folderErrors.length > 0) {
+          return res.status(500).json({ message: `Some folders couldn't be created: ${folderErrors.join(', ')}` });
         }
+
+        return res.json({ message: 'Registration successful! Folders created on both servers.' });
       }
     );
   } catch (error) {
@@ -62,16 +77,15 @@ app.post('/register', async (req, res) => {
   }
 });
 
-
 // Login route
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
-  db.query('SELECT * FROM users WHERE email = ?', [username], async (err, result) => { // Querying by 'email' to match registration
+  db.query('SELECT * FROM users WHERE email = ?', [username], async (err, result) => { 
     if (err) throw err;
     if (result.length > 0) {
       const isMatch = await bcrypt.compare(password, result[0].password);
       if (isMatch) {
-        const token = jwt.sign({ id: result[0].id }, 'secretkey', { expiresIn: '1h' }); // Set token expiration to 1 hour
+        const token = jwt.sign({ id: result[0].id }, 'secretkey', { expiresIn: '1h' }); 
         res.send({ message: 'Login successful', token });
       } else {
         res.send({ message: 'Invalid password' });
@@ -82,6 +96,7 @@ app.post('/login', (req, res) => {
   });
 });
 
+// Start the server
 app.listen(3001, () => {
-  console.log('Server running on port 3001');
+  console.log('Server running on port 3001');
 });
