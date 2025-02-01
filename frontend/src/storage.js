@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Sidebar } from "./Sidebar"; // Sidebar Component
-import rectangle1 from "./images/rectangle-1.svg";
 import searchIcon from "./images/search.svg";
 import "./style.css";
 
