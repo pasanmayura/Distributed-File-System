@@ -6,7 +6,10 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const mysql = require('mysql');
-const fileRoutes = require('./fileRoutes'); 
+const fileRoutes = require('./fileRoutes');
+const { authorize, uploadFile } = require('./gDrive');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 app.use(bodyParser.json());
@@ -58,7 +61,6 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
-
 
 // Multer setup for file uploads (store in memory)
 const storage = multer.memoryStorage();
@@ -227,10 +229,38 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, 'your_jwt_secret');
     const userId = decoded.id;
+    const userEmail = decoded.email;
 
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
+    }
+
+    let driveFile = null;
+    let mongoSuccess = false;
+
+    // Create a temporary file to upload to Google Drive
+    const tempFilePath = path.join(__dirname, 'temp', req.file.originalname);
+    fs.writeFileSync(tempFilePath, req.file.buffer);
+
+    // Authorize and upload the file to Google Drive
+    try {
+      const authClient = await authorize();
+      driveFile = await uploadFile(authClient, { path: tempFilePath, originalname: req.file.originalname, mimetype: req.file.mimetype });
+    } catch (driveError) {
+      console.error('Google Drive upload error:', driveError);
+    }
+
+    // Remove the temporary file
+    fs.unlinkSync(tempFilePath);
+
+    // Save the file URL to the MySQL database if Google Drive upload was successful
+    if (driveFile && mysqlConnected) {
+      db.query('INSERT INTO media (email, file_url) VALUES (?, ?)', [userEmail, driveFile.webViewLink], (err, result) => {
+        if (err) {
+          console.error('MySQL error:', err);
+        }
+      });
     }
 
     // Create an object with the file metadata and data
@@ -243,14 +273,18 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     // Push the file metadata into the user's uploads array
     user.uploads.push(fileMetadata);
     await user.save();
+    mongoSuccess = true;
 
-    res.json({ message: 'File uploaded successfully', file: fileMetadata });
+    if (driveFile || mongoSuccess) {
+      res.json({ message: 'File uploaded successfully', file: fileMetadata, driveFileUrl: driveFile ? driveFile.webViewLink : null });
+    } else {
+      res.status(500).json({ message: 'Error uploading file to both Google Drive and MongoDB' });
+    }
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error uploading file', error });
   }
 });
-
 
 app.use('/api', fileRoutes);
 
