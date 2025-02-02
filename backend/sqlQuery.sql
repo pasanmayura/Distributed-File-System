@@ -9,6 +9,7 @@ CREATE TABLE Users (
 CREATE TABLE media (
     id INT PRIMARY KEY AUTO_INCREMENT,
     email VARCHAR(255),
+    file_name VARCHAR(255),
     file_url VARCHAR(500),
     FOREIGN KEY (email) REFERENCES users(email)
 );

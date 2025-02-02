@@ -256,7 +256,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     // Save the file URL to the MySQL database if Google Drive upload was successful
     if (driveFile && mysqlConnected) {
-      db.query('INSERT INTO media (email, file_url) VALUES (?, ?)', [userEmail, driveFile.webViewLink], (err, result) => {
+      db.query('INSERT INTO media (email, file_name, file_url) VALUES (?, ?, ?)', [userEmail, req.file.originalname, driveFile.webViewLink], (err, result) => {
         if (err) {
           console.error('MySQL error:', err);
         }
