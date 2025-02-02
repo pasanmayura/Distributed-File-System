@@ -171,7 +171,7 @@ app.post('/login', async (req, res) => {
         }
 
         // Generate token
-        const token = jwt.sign({ email: mysqlUser.email, id: mysqlUser.id }, 'your_jwt_secret', { expiresIn: '1h' });
+        const token = jwt.sign({ email: user.email, id: user._id }, 'your_jwt_secret', { expiresIn: '1h' });
 
         console.log("Generated Token:", token); // Debugging log
 
