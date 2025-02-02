@@ -31,12 +31,12 @@ export const Sidebar = () => {
       <nav className="sidebar-menu">
         <div className="menu-section">
           <ul className="menu-list">
-            <a href="#Home">
+            <Link to="/dashboard">
               <li className="menu-item">
                 <img className="icon" alt="Home" src={cloud} />
                 Home
               </li>
-            </a>
+            </Link>
           </ul>
         </div>
         <div className="menu-section">
