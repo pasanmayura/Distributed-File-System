@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
 import searchIcon from "./images/search.svg";
 import "./style.css";
+import "./StyleCard.css";
 import axios from 'axios';
+import StorageCard from "./StorageCard";
 
 const Storage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,24 +60,10 @@ const Storage = () => {
         </div>
 
         <section className="preview-section">
-          <h2>File Preview</h2>
-          <div className="preview-grid">
-            {filteredData.map((item, index) => (
-              <div key={index} className="preview-item">
-                {item.type.startsWith("image/") && (
-                  <img src={`data:${item.type};base64,${btoa(String.fromCharCode(...new Uint8Array(item.data.data)))}`} alt={item.filename} />
-                )}
-                {item.type.startsWith("video/") && (
-                  <video controls>
-                    <source src={`data:${item.type};base64,${btoa(String.fromCharCode(...new Uint8Array(item.data.data)))}`} type={item.type} />
-                  </video>
-                )}
-                {item.type === "application/pdf" && (
-                  <a href={`data:application/pdf;base64,${btoa(String.fromCharCode(...new Uint8Array(item.data.data)))}`} target="_blank" rel="noopener noreferrer">
-                    📄 {item.filename}
-                  </a>
-                )}
-              </div>
+          <h2>My Files</h2>
+          <div className="file-grid">
+            {filteredData.map((file, index) => (
+              <StorageCard key={index} file={file} />
             ))}
           </div>
         </section>

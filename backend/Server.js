@@ -286,6 +286,30 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
+app.get('/user/files', async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, 'your_jwt_secret');
+    const userEmail = decoded.email;
+
+    if (mysqlConnected) {
+      db.query('SELECT file_name, file_url FROM media WHERE email = ?', [userEmail], (err, results) => {
+        if (err) {
+          console.error('MySQL error:', err);
+          return res.status(500).json({ message: 'Server error' });
+        }
+
+        res.json(results);
+      });
+    } else {
+      res.status(500).json({ message: 'MySQL not connected' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 app.use('/api', fileRoutes);
 
 // Start the server

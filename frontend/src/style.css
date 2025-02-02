@@ -133,6 +133,12 @@
     cursor: pointer;
 }
 
+.filter-buttons button {
+    margin: 20px;  
+    padding: 10px 20px;
+    width: 100px;
+  }
+  
 /* Content Section */
 .content-section {
     display: flex;
