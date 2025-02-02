@@ -125,31 +125,65 @@ app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    const user = await User.findOne({ email: username });
-    
-    if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+    let user = null;
+
+    // Check MongoDB first
+    if (mongoConnected) {
+      try {
+        user = await User.findOne({ email: username });
+      } catch (mongoError) {
+        console.error('MongoDB error:', mongoError);
+      }
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+    // If user is not found in MongoDB or MongoDB is not connected, check MySQL
+    if (!user && mysqlConnected) {
+      db.query('SELECT * FROM users WHERE email = ?', [username], async (err, results) => {
+        if (err) {
+          console.error('MySQL error:', err);
+          return res.status(500).json({ message: 'Server error' });
+        }
+
+        if (results.length === 0) {
+          return res.status(401).json({ message: 'User not found' });
+        }
+
+        const mysqlUser = results[0];
+        const isMatch = await bcrypt.compare(password, mysqlUser.password);
+
+        if (!isMatch) {
+          return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Generate token
+        const token = jwt.sign({ email: mysqlUser.email, id: mysqlUser.id }, 'your_jwt_secret', { expiresIn: '1h' });
+
+        console.log("Generated Token:", token); // Debugging log
+
+        return res.json({ token });
+      });
+    } else if (user) {
+      // If user is found in MongoDB
+      const isMatch = await bcrypt.compare(password, user.password);
+
+      if (!isMatch) {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      // Generate token
+      const token = jwt.sign({ email: user.email, id: user._id }, 'your_jwt_secret', { expiresIn: '1h' });
+
+      console.log("Generated Token:", token); // Debugging log
+
+      return res.json({ token });
+    } else {
+      return res.status(500).json({ message: 'Server error: No database connection' });
     }
-
-    // Generate token
-    const token = jwt.sign({ email: user.email, id: user._id }, 'your_jwt_secret', { expiresIn: '1h' });
-
-    console.log("Generated Token:", token); // Debugging log
-
-    res.json({ token });
-
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error' });
+    return res.status(500).json({ message: 'Server error' });
   }
 });
-
 
 // File upload route
 app.post('/upload', upload.single('file'), async (req, res) => {
@@ -157,23 +191,23 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     const token = req.headers.authorization.split(" ")[1];
     const decoded = jwt.verify(token, 'your_jwt_secret');
     const userId = decoded.id;
-    
+
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+          return res.status(404).json({ message: 'User not found' });
+        }
 
     // Create an object with the file metadata and data
-    const fileMetadata = {
+      const fileMetadata = {
       type: req.file.mimetype, // MIME type (e.g., 'image/jpeg')
       data: req.file.buffer,    // File data as Buffer (binary content)
       filename: req.file.originalname // Original file name
-    };
+      };
 
     // Push the file metadata into the user's uploads array
-    user.uploads.push(fileMetadata);
-    await user.save();
-    
+      user.uploads.push(fileMetadata);
+      await user.save();
+
     res.json({ message: 'File uploaded successfully', file: fileMetadata });
   } catch (error) {
     console.error(error);
