@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const mysql = require('mysql');
+const fileRoutes = require('./fileRoutes'); 
 
 const app = express();
 app.use(bodyParser.json());
@@ -46,7 +47,7 @@ const userSchema = new mongoose.Schema({
   email: String,
   password: String,
   uploads: [{
-    type: Object,  // Change from 'String' to 'Object'
+    type: Object,
     required: true,
     properties: {
       type: { type: String },
@@ -56,7 +57,8 @@ const userSchema = new mongoose.Schema({
   }]
 });
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+
 
 // Multer setup for file uploads (store in memory)
 const storage = multer.memoryStorage();
@@ -228,19 +230,19 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     const user = await User.findById(userId);
     if (!user) {
-          return res.status(404).json({ message: 'User not found' });
-        }
+      return res.status(404).json({ message: 'User not found' });
+    }
 
     // Create an object with the file metadata and data
-      const fileMetadata = {
-      type: req.file.mimetype, // MIME type (e.g., 'image/jpeg')
-      data: req.file.buffer,    // File data as Buffer (binary content)
-      filename: req.file.originalname // Original file name
-      };
+    const fileMetadata = {
+      type: req.file.mimetype,
+      data: req.file.buffer,
+      filename: req.file.originalname
+    };
 
     // Push the file metadata into the user's uploads array
-      user.uploads.push(fileMetadata);
-      await user.save();
+    user.uploads.push(fileMetadata);
+    await user.save();
 
     res.json({ message: 'File uploaded successfully', file: fileMetadata });
   } catch (error) {
@@ -248,6 +250,9 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     res.status(500).json({ message: 'Error uploading file', error });
   }
 });
+
+
+app.use('/api', fileRoutes);
 
 // Start the server
 app.listen(3001, () => {
