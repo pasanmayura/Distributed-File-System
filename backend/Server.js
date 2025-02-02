@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const mysql = require('mysql');
+const fileRoutes = require('./fileRoutes'); 
 
 const app = express();
 app.use(bodyParser.json());
@@ -46,7 +47,7 @@ const userSchema = new mongoose.Schema({
   email: String,
   password: String,
   uploads: [{
-    type: Object,  // Change from 'String' to 'Object'
+    type: Object,
     required: true,
     properties: {
       type: { type: String },
@@ -56,7 +57,8 @@ const userSchema = new mongoose.Schema({
   }]
 });
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+
 
 // Multer setup for file uploads (store in memory)
 const storage = multer.memoryStorage();
@@ -126,6 +128,7 @@ app.post('/login', async (req, res) => {
 
   try {
     let user = null;
+    let mysqlUser = null;
 
     // Check MongoDB first
     if (mongoConnected) {
@@ -148,15 +151,29 @@ app.post('/login', async (req, res) => {
           return res.status(401).json({ message: 'User not found' });
         }
 
-        const mysqlUser = results[0];
+        mysqlUser = results[0];
         const isMatch = await bcrypt.compare(password, mysqlUser.password);
 
         if (!isMatch) {
           return res.status(401).json({ message: 'Invalid credentials' });
         }
 
+        // Register the user in MongoDB
+        const newUser = new User({
+          email: mysqlUser.email,
+          password: mysqlUser.password,
+          uploads: []
+        });
+
+        try {
+          user = await newUser.save();
+        } catch (mongoError) {
+          console.error('MongoDB error:', mongoError);
+          return res.status(500).json({ message: 'Error registering user in MongoDB', error: mongoError });
+        }
+
         // Generate token
-        const token = jwt.sign({ email: mysqlUser.email, id: mysqlUser.id }, 'your_jwt_secret', { expiresIn: '1h' });
+        const token = jwt.sign({ email: user.email, id: user._id }, 'your_jwt_secret', { expiresIn: '1h' });
 
         console.log("Generated Token:", token); // Debugging log
 
@@ -168,6 +185,25 @@ app.post('/login', async (req, res) => {
 
       if (!isMatch) {
         return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      // Register the user in MySQL if not already registered
+      if (mysqlConnected) {
+        db.query('SELECT * FROM users WHERE email = ?', [username], async (err, results) => {
+          if (err) {
+            console.error('MySQL error:', err);
+            return res.status(500).json({ message: 'Server error' });
+          }
+
+          if (results.length === 0) {
+            db.query('INSERT INTO users (email, password) VALUES (?, ?)', [user.email, user.password], (err, result) => {
+              if (err) {
+                console.error('MySQL error:', err);
+                return res.status(500).json({ message: 'Error registering user in MySQL', error: err });
+              }
+            });
+          }
+        });
       }
 
       // Generate token
@@ -194,19 +230,19 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
     const user = await User.findById(userId);
     if (!user) {
-          return res.status(404).json({ message: 'User not found' });
-        }
+      return res.status(404).json({ message: 'User not found' });
+    }
 
     // Create an object with the file metadata and data
-      const fileMetadata = {
-      type: req.file.mimetype, // MIME type (e.g., 'image/jpeg')
-      data: req.file.buffer,    // File data as Buffer (binary content)
-      filename: req.file.originalname // Original file name
-      };
+    const fileMetadata = {
+      type: req.file.mimetype,
+      data: req.file.buffer,
+      filename: req.file.originalname
+    };
 
     // Push the file metadata into the user's uploads array
-      user.uploads.push(fileMetadata);
-      await user.save();
+    user.uploads.push(fileMetadata);
+    await user.save();
 
     res.json({ message: 'File uploaded successfully', file: fileMetadata });
   } catch (error) {
@@ -215,6 +251,8 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
+
+app.use('/api', fileRoutes);
 
 // Start the server
 app.listen(3001, () => {
