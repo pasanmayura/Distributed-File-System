@@ -5,12 +5,41 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const multer = require('multer');
+const mysql = require('mysql');
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-mongoose.connect("mongodb+srv://kasun:123@cluster0.mvw9k.mongodb.net/DFS");
+const db = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: '', 
+  database: 'dfs',
+  port: 3307
+});
+
+let mysqlConnected = false;
+let mongoConnected = false;
+
+// Attempt to connect to MySQL
+db.connect((err) => {
+  if (err) {
+    console.error('MySQL connection error:', err);
+  } else {
+    mysqlConnected = true;
+    console.log('Connected to MySQL');
+  }
+});
+
+mongoose.connect("mongodb+srv://kasun:123@cluster0.mvw9k.mongodb.net/DFS", { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    mongoConnected = true;
+    console.log('Connected to MongoDB');
+  })
+  .catch((err) => {
+    console.error('MongoDB connection error:', err);
+  });
 
 // User schema and model
 const userSchema = new mongoose.Schema({
@@ -46,10 +75,49 @@ const upload = multer({
 // Register route
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = new User({ email: username, password: hashedPassword, uploads: [] });
-  await user.save();
-  res.json({ message: 'User registered successfully' });
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    let mysqlSuccess = false;
+    let mongoSuccess = false;
+
+    // Insert into MySQL
+    db.query(
+      'INSERT INTO users (email, password) VALUES (?, ?)', 
+      [username, hashedPassword],
+      async (err, result) => {
+        if (err) {
+          console.error('MySQL error:', err);
+        } else {
+          mysqlSuccess = true;
+        }
+
+        // Insert into MongoDB
+        const newUser = new User({
+          email: username,
+          password: hashedPassword,
+          uploads: []
+        });
+
+        try {
+          await newUser.save();
+          mongoSuccess = true;
+        } catch (mongoError) {
+          console.error('MongoDB error:', mongoError);
+        }
+
+        if (mysqlSuccess || mongoSuccess) {
+          return res.json({ message: 'Registration successful!' });
+        } else {
+          return res.status(500).json({ message: 'Registration failed in both databases.' });
+        }
+      }
+    );
+  } catch (error) {
+    console.error('Error during registration:', error);
+    return res.status(500).json({ message: 'An error occurred during registration.' });
+  }
 });
 
 // Login route
@@ -117,4 +185,10 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 // Start the server
 app.listen(3001, () => {
   console.log('Server running on port 3001');
+  if (!mysqlConnected) {
+    console.warn('Warning: Not connected to MySQL');
+  }
+  if (!mongoConnected) {
+    console.warn('Warning: Not connected to MongoDB');
+  }
 });
