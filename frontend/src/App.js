@@ -10,7 +10,7 @@ function App() {
     <Router>
       <Routes>
         {/* Redirect to /Login if the user visits the root route */}
-        <Route path="/" element={<Navigate to="/Register" />} />
+        <Route path="/" element={<Navigate to="/Login" />} />
         
          {/* Route for the storage */}
         <Route path="/Storage" element={<Storage />} />

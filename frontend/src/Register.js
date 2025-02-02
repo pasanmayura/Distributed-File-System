@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';  // Import useNavigate
 import './Register.css';
 import register from './images/register.png';
@@ -50,6 +51,7 @@ const Register = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
         <button type="submit">Register</button>
+        <p className="login">Already have an account? <Link to="/login" className="login-link">Log in</Link></p>
       </form>
       {message && <p className="message">{message}</p>}
     </div>

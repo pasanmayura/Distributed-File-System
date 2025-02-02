@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';  // useNavigate to redirect after login
 import './Login.css';
 import Loginimg from './images/Loginimg.png';  // Import the image
@@ -61,6 +62,7 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
           <button type="submit">Login</button>
+          <p>Don't Have an Account? <Link to="/register" className="login-link">Sign up</Link></p>
         </form>
         {message && <p className="message">{message}</p>}
       </div>
