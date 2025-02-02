@@ -1,102 +1,101 @@
 const express = require('express');
-const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
-const path = require('path');
+const mongoose = require('mongoose');
+const multer = require('multer');
 
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-const db = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '', 
-  database: 'dfs',
-  port: 3307
+mongoose.connect("mongodb+srv://kasun:123@cluster0.mvw9k.mongodb.net/DFS");
+
+// User schema and model
+const userSchema = new mongoose.Schema({
+  email: String,
+  password: String,
+  uploads: [{
+    type: Object,  // Change from 'String' to 'Object'
+    required: true,
+    properties: {
+      type: { type: String },
+      data: { type: Buffer },
+      filename: { type: String }
+    }
+  }]
 });
 
-db.connect((err) => {
-  if (err) throw err;
-  console.log('Connected to MySQL');
-});
+const User = mongoose.model('User', userSchema);
 
-// Register route (creates folders on both servers)
-app.post('/register', async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    db.query(
-      'INSERT INTO users (email, password) VALUES (?, ?)', 
-      [username, hashedPassword],
-      (err, result) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ message: 'Database error occurred.' });
-        }
-
-        // Define the network paths of both servers
-        const serverPaths = [
-          '\\\\172.19.21.103\\share',  // First server
-          '\\\\172.19.21.109\\share'   // Second server
-        ];
-
-        let folderErrors = [];
-
-        // Create folder on both servers
-        serverPaths.forEach((serverPath) => {
-          const folderPath = path.join(serverPath, username);
-          try {
-            if (!fs.existsSync(folderPath)) {
-              fs.mkdirSync(folderPath);
-              console.log(`Folder created at: ${folderPath}`);
-            } else {
-              console.log('Folder already exists at: ${folderPath}');
-            }
-          } catch (folderError) {
-            console.error(`Error creating folder at ${folderPath}:`, folderError);
-            folderErrors.push(folderPath);
-          }
-        });
-
-        if (folderErrors.length > 0) {
-          return res.status(500).json({ message: `Some folders couldn't be created: ${folderErrors.join(', ')}` });
-        }
-
-        return res.json({ message: 'Registration successful! Folders created on both servers.' });
-      }
-    );
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'An error occurred during registration.' });
+// Multer setup for file uploads (store in memory)
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage: storage,
+  fileFilter: (req, file, callback) => {
+    if (['image/png', 'image/jpg', 'image/jpeg', 'application/pdf', 'video/mp4'].includes(file.mimetype)) {
+      callback(null, true);
+    } else {
+      console.log("Only jpg, png, pdf, and mp4 files are allowed!");
+      callback(null, false);
+    }
   }
 });
 
-// Login route
-app.post('/login', (req, res) => {
+// Register route
+app.post('/register', async (req, res) => {
   const { username, password } = req.body;
-  db.query('SELECT * FROM users WHERE email = ?', [username], async (err, result) => { 
-    if (err) throw err;
-    if (result.length > 0) {
-      const isMatch = await bcrypt.compare(password, result[0].password);
-      if (isMatch) {
-        const token = jwt.sign({ id: result[0].id }, 'secretkey', { expiresIn: '1h' }); 
-        res.send({ message: 'Login successful', token });
-      } else {
-        res.send({ message: 'Invalid password' });
-      }
-    } else {
-      res.send({ message: 'User not found' });
-    }
-  });
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const user = new User({ email: username, password: hashedPassword, uploads: [] });
+  await user.save();
+  res.json({ message: 'User registered successfully' });
 });
+
+// Login route
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  const user = await User.findOne({ email: username });
+  if (user && await bcrypt.compare(password, user.password)) {
+    const token = jwt.sign({ email: user.email, id: user._id }, 'your_jwt_secret');
+    res.json({ token });
+  } else {
+    res.status(401).json({ message: 'Invalid credentials' });
+  }
+});
+
+// File upload route
+app.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    const decoded = jwt.verify(token, 'your_jwt_secret');
+    const userId = decoded.id;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Create an object with the file metadata and data
+    const fileMetadata = {
+      type: req.file.mimetype, // MIME type (e.g., 'image/jpeg')
+      data: req.file.buffer,    // File data as Buffer (binary content)
+      filename: req.file.originalname // Original file name
+    };
+
+    // Push the file metadata into the user's uploads array
+    user.uploads.push(fileMetadata);
+    await user.save();
+    
+    res.json({ message: 'File uploaded successfully', file: fileMetadata });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error uploading file', error });
+  }
+});
+
 
 // Start the server
 app.listen(3001, () => {
-  console.log('Server running on port 3001');
+  console.log('Server running on port 3001');
 });
