@@ -126,6 +126,7 @@ app.post('/login', async (req, res) => {
 
   try {
     let user = null;
+    let mysqlUser = null;
 
     // Check MongoDB first
     if (mongoConnected) {
@@ -148,11 +149,25 @@ app.post('/login', async (req, res) => {
           return res.status(401).json({ message: 'User not found' });
         }
 
-        const mysqlUser = results[0];
+        mysqlUser = results[0];
         const isMatch = await bcrypt.compare(password, mysqlUser.password);
 
         if (!isMatch) {
           return res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        // Register the user in MongoDB
+        const newUser = new User({
+          email: mysqlUser.email,
+          password: mysqlUser.password,
+          uploads: []
+        });
+
+        try {
+          user = await newUser.save();
+        } catch (mongoError) {
+          console.error('MongoDB error:', mongoError);
+          return res.status(500).json({ message: 'Error registering user in MongoDB', error: mongoError });
         }
 
         // Generate token
@@ -168,6 +183,25 @@ app.post('/login', async (req, res) => {
 
       if (!isMatch) {
         return res.status(401).json({ message: 'Invalid credentials' });
+      }
+
+      // Register the user in MySQL if not already registered
+      if (mysqlConnected) {
+        db.query('SELECT * FROM users WHERE email = ?', [username], async (err, results) => {
+          if (err) {
+            console.error('MySQL error:', err);
+            return res.status(500).json({ message: 'Server error' });
+          }
+
+          if (results.length === 0) {
+            db.query('INSERT INTO users (email, password) VALUES (?, ?)', [user.email, user.password], (err, result) => {
+              if (err) {
+                console.error('MySQL error:', err);
+                return res.status(500).json({ message: 'Error registering user in MySQL', error: err });
+              }
+            });
+          }
+        });
       }
 
       // Generate token
@@ -214,7 +248,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     res.status(500).json({ message: 'Error uploading file', error });
   }
 });
-
 
 // Start the server
 app.listen(3001, () => {
