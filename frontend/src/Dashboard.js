@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Sidebar } from "./Sidebar";
-import rectangle1 from "./images/rectangle-1.svg";
-import search from "./images/search.svg";
 import imageIcon from "./images/image.svg";
 import fileIcon from "./images/file.png";
 import youtubeIcon from "./images/youtube.svg";
@@ -73,10 +71,7 @@ export const Dashboard = () => {
     <div className="dashboard">
       <Sidebar />
       <main className="main-content">
-        <header className="main-header">
-          <img className="search-bar" alt="Search bar" src={rectangle1} />
-          <img className="search-icon" alt="Search icon" src={search} />
-        </header>
+        
         <section className="content-section">
           <div className="content-item" onClick={() => triggerFileInput("image")}>
             <img className="icon" alt="Gallery" src={imageIcon} />
