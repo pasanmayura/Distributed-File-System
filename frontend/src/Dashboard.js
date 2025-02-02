@@ -1,10 +1,11 @@
-import React, { useState } from "react";
-import { Sidebar } from "./Sidebar"; // Import the Sidebar component
+import React, { useState, useEffect } from "react";
+import { Sidebar } from "./Sidebar";
 import rectangle1 from "./images/rectangle-1.svg";
 import search from "./images/search.svg";
-import image from "./images/image.svg";
-import file from "./images/file.png";
-import youtube from "./images/youtube.svg";
+import imageIcon from "./images/image.svg";
+import fileIcon from "./images/file.png";
+import youtubeIcon from "./images/youtube.svg";
+import axios from "axios";
 import "./style.css";
 
 export const Dashboard = () => {
@@ -12,44 +13,59 @@ export const Dashboard = () => {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [selectedVideo, setSelectedVideo] = useState(null);
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedImage(URL.createObjectURL(file));
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "/login";
+    } else {
+      console.log("Token:", token);
     }
-  };
+  }, []);
 
-  const handleDocumentUpload = (e) => {
+  const handleFileChange = (e, type) => {
     const file = e.target.files[0];
-    if (file) {
-      setSelectedDocument(file.name);
-    }
-  };
+    if (!file) return;
 
-  const handleVideoUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedVideo(URL.createObjectURL(file));
+    if (type === "image") {
+      setSelectedImage(file); // Store actual file
+    } else if (type === "document") {
+      setSelectedDocument(file);
+    } else if (type === "video") {
+      setSelectedVideo(file);
     }
   };
 
   const triggerFileInput = (type) => {
-    if (type === "image") {
-      document.getElementById("image-input").click();
-    } else if (type === "document") {
-      document.getElementById("document-input").click();
-    } else if (type === "video") {
-      document.getElementById("video-input").click();
-    }
+    document.getElementById(`${type}-input`).click();
   };
 
   const handleRemove = (type) => {
-    if (type === "image") {
-      setSelectedImage(null);
-    } else if (type === "document") {
-      setSelectedDocument(null);
-    } else if (type === "video") {
-      setSelectedVideo(null);
+    if (type === "image") setSelectedImage(null);
+    if (type === "document") setSelectedDocument(null);
+    if (type === "video") setSelectedVideo(null);
+  };
+
+  const handleUpload = async () => {
+    const formData = new FormData();
+
+    if (selectedImage) formData.append("file", selectedImage);
+    if (selectedDocument) formData.append("file", selectedDocument);
+    if (selectedVideo) formData.append("file", selectedVideo);
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.post("http://localhost:3001/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log("Upload success:", response.data);
+      alert("File uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading file:", error.response?.data || error);
+      alert("File upload failed!");
     }
   };
 
@@ -63,24 +79,25 @@ export const Dashboard = () => {
         </header>
         <section className="content-section">
           <div className="content-item" onClick={() => triggerFileInput("image")}>
-            <img className="icon" alt="Gallery" src={image} />
+            <img className="icon" alt="Gallery" src={imageIcon} />
             <p>Images</p>
           </div>
           <div className="content-item" onClick={() => triggerFileInput("document")}>
-            <img className="icon" alt="Documents" src={file} />
+            <img className="icon" alt="Documents" src={fileIcon} />
             <p>Docs</p>
           </div>
           <div className="content-item" onClick={() => triggerFileInput("video")}>
-            <img className="icon" alt="Video files" src={youtube} />
+            <img className="icon" alt="Video files" src={youtubeIcon} />
             <p>Video</p>
           </div>
         </section>
+
         <section className="preview-section">
           <h2>Preview</h2>
           <div className="preview-grid">
             {selectedImage && (
               <div className="preview-item">
-                <img src={selectedImage} alt="Selected" />
+                <p>{selectedImage.name}</p>
                 <div className="preview-controls">
                   <button className="preview-control-btn" onClick={() => triggerFileInput("image")}>Edit</button>
                   <button className="preview-control-btn remove-btn" onClick={() => handleRemove("image")}>Remove</button>
@@ -89,7 +106,7 @@ export const Dashboard = () => {
             )}
             {selectedDocument && (
               <div className="preview-item">
-                <p>{selectedDocument}</p>
+                <p>{selectedDocument.name}</p>
                 <div className="preview-controls">
                   <button className="preview-control-btn" onClick={() => triggerFileInput("document")}>Edit</button>
                   <button className="preview-control-btn remove-btn" onClick={() => handleRemove("document")}>Remove</button>
@@ -98,7 +115,7 @@ export const Dashboard = () => {
             )}
             {selectedVideo && (
               <div className="preview-item">
-                <video controls src={selectedVideo} />
+                <p>{selectedVideo.name}</p>
                 <div className="preview-controls">
                   <button className="preview-control-btn" onClick={() => triggerFileInput("video")}>Edit</button>
                   <button className="preview-control-btn remove-btn" onClick={() => handleRemove("video")}>Remove</button>
@@ -107,34 +124,15 @@ export const Dashboard = () => {
             )}
           </div>
         </section>
+
         <center>
-          <button className="upload-btn">Upload</button>
+          <button className="upload-btn" onClick={handleUpload}>Upload</button>
         </center>
       </main>
 
-      <input 
-        id="image-input" 
-        type="file" 
-        accept="image/*" 
-        style={{ display: "none" }} 
-        onChange={handleImageUpload} 
-      />
-
-      <input 
-        id="document-input" 
-        type="file" 
-        accept=".pdf,.doc,.docx,.txt" 
-        style={{ display: "none" }} 
-        onChange={handleDocumentUpload} 
-      />
-
-      <input 
-        id="video-input" 
-        type="file" 
-        accept="video/*" 
-        style={{ display: "none" }} 
-        onChange={handleVideoUpload} 
-      />
+      <input id="image-input" type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => handleFileChange(e, "image")} />
+      <input id="document-input" type="file" accept=".pdf,.doc,.docx,.txt" style={{ display: "none" }} onChange={(e) => handleFileChange(e, "document")} />
+      <input id="video-input" type="file" accept="video/*" style={{ display: "none" }} onChange={(e) => handleFileChange(e, "video")} />
     </div>
   );
 };

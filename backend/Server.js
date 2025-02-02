@@ -55,14 +55,33 @@ app.post('/register', async (req, res) => {
 // Login route
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  const user = await User.findOne({ email: username });
-  if (user && await bcrypt.compare(password, user.password)) {
-    const token = jwt.sign({ email: user.email, id: user._id }, 'your_jwt_secret');
+
+  try {
+    const user = await User.findOne({ email: username });
+    
+    if (!user) {
+      return res.status(401).json({ message: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Generate token
+    const token = jwt.sign({ email: user.email, id: user._id }, 'your_jwt_secret', { expiresIn: '1h' });
+
+    console.log("Generated Token:", token); // Debugging log
+
     res.json({ token });
-  } else {
-    res.status(401).json({ message: 'Invalid credentials' });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
+
 
 // File upload route
 app.post('/upload', upload.single('file'), async (req, res) => {
